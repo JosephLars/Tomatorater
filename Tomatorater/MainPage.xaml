@@ -7,7 +7,78 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid x:Name="gridPage" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+
+
+
+
+
+        <Viewbox x:Name="MirrorBox" StretchDirection="DownOnly" Visibility="Collapsed" Margin="12,0,12,0">
+            <TextBlock x:Name="Mirror" Text="{Binding Text, ElementName=suggestBox}" Style="{ThemeResource HeaderTextBlockStyle}" HorizontalAlignment="Center"/>
+        </Viewbox>
+
+
+        <StackPanel x:Name="RatingDisplay" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="12,0,12,0">
+            <Viewbox StretchDirection="DownOnly">
+                <StackPanel Orientation="Horizontal" x:Name="MovieTitleBox" Visibility="Collapsed">
+                    <TextBlock x:Name="MovieTitle" Text="{Binding Text, ElementName=suggestBox}" Style="{ThemeResource HeaderTextBlockStyle}" HorizontalAlignment="Center"/>
+                    <Image x:Name="CertIm" Source="Images\CF_120x120.png" Width="45" Height="45" Visibility="Collapsed"/>
+                </StackPanel>
+            </Viewbox>
+
+            <StackPanel x:Name="InnerRatingDisplay" HorizontalAlignment="Center">
+                <StackPanel x:Name="FirstBox" Margin="25" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="TOMATOMETER™" Style="{ThemeResource SubtitleTextBlockStyle}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Image x:Name="TomatoImage" Source="Images\fresh.png" Width="60" Height="60" Margin="0,0,5,0"/>
+                        <TextBlock x:Name="tomatoMeter" Style="{ThemeResource HeaderTextBlockStyle}" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel x:Name="SecondBox" Margin="25" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="AUDIENCE SCORE" Style="{ThemeResource SubtitleTextBlockStyle}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Image x:Name="PopcornImage" Source="Images\popcorn.png" Width="60" Height="60" Margin="0,0,5,0"/>
+                        <TextBlock x:Name="tomatoUserMeter" Style="{ThemeResource HeaderTextBlockStyle}" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+
+        <StackPanel x:Name="Caption" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+            <TextBlock x:Name="Header" Grid.Row="1" Style="{ThemeResource SubheaderTextBlockStyle}" Opacity="100" TextAlignment="Center" Margin="0,0,0,5">
+                <Run Text="Tomato"/><Run Text="rater" Foreground="Red"/>
+            </TextBlock>
+            <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" TextAlignment="Center">
+                <Run Text="Rotten Tomatoes ratings, instantly!" x:Uid="SubTitle1"/>
+                <LineBreak />
+                <Run Text="Just start typing." x:Uid="SubTitle2"/>
+            </TextBlock>
+        </StackPanel>
+
+
+        <ProgressRing x:Name="progressRing" IsActive="False" Width="100" Height="100"/>
+
+        <AutoSuggestBox Grid.Row="1" PlaceholderText="Enter a movie" x:Name="suggestBox" QueryIcon="Find" TextChanged="suggestBox_TextChanged" MaxWidth="976" QuerySubmitted="suggestBox_QuerySubmitted" KeyUp="suggestBox_KeyUp"/>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="Portrait">
+                    <!-- The default properties are set in the XAML. -->
+                </VisualState>
+                <VisualState x:Name="Landscape">
+                    <Storyboard>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="InnerRatingDisplay" Storyboard.TargetProperty="Orientation">
+                            <DiscreteObjectKeyFrame KeyTime="0" Value="Horizontal"/>
+                        </ObjectAnimationUsingKeyFrames>
+                    </Storyboard>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
 
     </Grid>
 </Page>
