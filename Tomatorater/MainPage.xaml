@@ -39,7 +39,7 @@
                     </StackPanel>
                 </StackPanel>
                 <StackPanel x:Name="SecondBox" Margin="25" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="IMDB" Style="{ThemeResource SubtitleTextBlockStyle}"/>
+                    <TextBlock Text="AUDIENCE SCORE" Style="{ThemeResource SubtitleTextBlockStyle}"/>
                     <StackPanel Orientation="Horizontal">
                         <Image x:Name="PopcornImage" Source="Images\popcorn.png" Width="60" Height="60" Margin="0,0,5,0"/>
                         <TextBlock x:Name="tomatoUserMeter" Style="{ThemeResource HeaderTextBlockStyle}" HorizontalAlignment="Center"/>

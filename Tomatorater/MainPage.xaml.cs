@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -60,6 +61,61 @@ namespace Tomatorater
                 VisualStateManager.GoToState(this, "Portrait", true);
         }
 
+        //scrape movie ratings from HTML
+        private async void ScrapeRatings(string movieTitle)
+        {
+            //Start progrss ring
+            progressRing.IsActive = true;
+
+
+            HtmlWeb web = new HtmlWeb();
+            var doc = await web.LoadFromWebAsync("https://www.rottentomatoes.com/m/" + Sanitize(movieTitle) + "/");
+            string tomatoMeter = doc.DocumentNode
+                .Descendants()
+                .First(o => o.GetAttributeValue("id", "") == "tomato_meter_link")
+                .Descendants()
+                .Where(e => e.Name == "span").Skip(1).Take(1).Single().InnerText;
+
+            string audienceScore = doc.DocumentNode
+                .Descendants()
+                .First(o => o.GetAttributeValue("id", "") == "scorePanel")
+                .Elements("div").Skip(1).Take(1).Single()
+                .Elements("div").Take(1).Single()
+                .Elements("a").Take(1).Single()
+                .Elements("div").Take(1).Single()
+                .Elements("div").Skip(1).Take(1).Single()
+                .Elements("div").Take(1).Single()
+                .Elements("span").Take(1).Single().InnerText;
+
+
+
+
+
+            //Display the scores :D
+            RatingDisplay.Visibility = Visibility.Visible;
+            TomatoImage.Visibility = Visibility.Visible;
+            PopcornImage.Visibility = Visibility.Visible;
+
+            MirrorBox.Visibility = Visibility.Collapsed;
+            MovieTitleBox.Visibility = Visibility.Visible;
+
+            //MovieTitle.Text = movieInfo.GetNamedString("Title") + " (" + movieInfo.GetNamedString("Year") + ")";
+            this.tomatoMeter.Text = tomatoMeter;
+            tomatoUserMeter.Text = audienceScore;
+
+            //End progrss ring
+            progressRing.IsActive = false;
+        }
+
+        //Cleans up the string - replaces spaces with underscores, converts to lowercase, removes stange characters
+        private string Sanitize(string str)
+        {
+            str = str.Replace(" ", "_").ToLower();
+            str = System.Text.RegularExpressions.Regex.Replace(str, @"[^\w\.@-]", "");
+            return str;
+        }
+
+        //get movie ratings
         public async void CallApi(string movieTitle)
         {
             //Start progrss ring
@@ -234,7 +290,8 @@ namespace Tomatorater
         private void suggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
             Debug.WriteLine("QuerySubmitted");
-            CallApi(sender.Text);
+            //CallApi(sender.Text);
+            ScrapeRatings(sender.Text);
         }
 
         //Drops virtual keyboard when enter is pressed
