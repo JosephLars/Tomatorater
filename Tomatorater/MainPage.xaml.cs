@@ -9,6 +9,7 @@ using Windows.Data.Json;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -33,11 +34,22 @@ namespace Tomatorater
             this.InitializeComponent();
 
             this.SizeChanged += MainPage_SizeChanged;
+            Window.Current.CoreWindow.CharacterReceived += coreWindow_CharacterReceived;
 
             // Set preferred window size on desktop
             // Source: http://stackoverflow.com/questions/31885979/windows-10-uwp-app-setting-window-size-on-desktop
             ApplicationView.PreferredLaunchViewSize = new Size(750, 650);
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
+        }
+
+        //When a character is pressed outside of suggestBox, focus box and insert into box
+        private void coreWindow_CharacterReceived(CoreWindow sender, CharacterReceivedEventArgs args)
+        {
+            if (FocusManager.GetFocusedElement().ToString() != "Windows.UI.Xaml.Controls.TextBox")
+            {
+                suggestBox.Focus(FocusState.Programmatic);
+                suggestBox.Text += (char)args.KeyCode;
+            }
         }
 
         private void MainPage_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -90,8 +102,8 @@ namespace Tomatorater
                         MovieTitleBox.Visibility = Visibility.Visible;
 
                         MovieTitle.Text = movieInfo.GetNamedString("Title") + " (" + movieInfo.GetNamedString("Year") + ")";
-                        tomatoMeter.Text = movieInfo.GetNamedString("tomatoMeter") + "%";
-                        tomatoUserMeter.Text = movieInfo.GetNamedString("tomatoUserMeter") + "%";
+                        tomatoMeter.Text = movieInfo.GetNamedArray("Ratings").GetObjectAt(1).GetNamedString("Value");
+                        tomatoUserMeter.Text = movieInfo.GetNamedArray("Ratings").GetObjectAt(0).GetNamedString("Value");
                         if (movieInfo.GetNamedString("tomatoImage") == "certified")
                             CertIm.Visibility = Visibility.Visible;
                         else
@@ -225,6 +237,7 @@ namespace Tomatorater
             CallApi(sender.Text);
         }
 
+        //Drops virtual keyboard when enter is pressed
         private void suggestBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == VirtualKey.Enter)
