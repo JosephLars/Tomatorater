@@ -122,6 +122,17 @@ namespace Tomatorater
                 .Elements("div").Take(1).Single()
                 .Elements("h1").Take(1).Single().InnerText.Trim();
 
+            string tomatoMeterIcon = doc.DocumentNode
+                .Descendants()
+                .First(o => o.GetAttributeValue("id", "") == "tomato_meter_link")
+                .Elements("span").Take(1).Single().OuterHtml.ToString();
+            if (tomatoMeterIcon.Contains("certified_fresh"))
+                tomatoMeterIcon = "certified_fresh";
+            else if (tomatoMeterIcon.Contains("fresh"))
+                tomatoMeterIcon = "fresh";
+            else
+                tomatoMeterIcon = "rotten";
+
             //End progrss ring
             progressRing.IsActive = false;
 
@@ -138,6 +149,17 @@ namespace Tomatorater
             MovieTitle.Text = title;
             this.tomatoMeter.Text = tomatoMeter;
             tomatoUserMeter.Text = audienceScore;
+
+            
+            if (tomatoMeterIcon == "certified_fresh")
+                TomatoImage.Source = new BitmapImage(new Uri("ms-appx:///Images/CF_120x120.png"));
+            else if (tomatoMeterIcon == "fresh")
+                TomatoImage.Source = new BitmapImage(new Uri("ms-appx:///Images/fresh.png"));
+            else if (tomatoMeterIcon == "rotten")
+                TomatoImage.Source = new BitmapImage(new Uri("ms-appx:///Images/rotten.png"));
+            else
+                TomatoImage.Visibility = Visibility.Collapsed;
+            
         }
 
         /// <summary>
