@@ -30,6 +30,7 @@ namespace Tomatorater
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        bool suggestBoxFocused = true;
         public MainPage()
         {
             this.InitializeComponent();
@@ -46,10 +47,14 @@ namespace Tomatorater
         //When a character is pressed outside of suggestBox, focus box and insert into box
         private void coreWindow_CharacterReceived(CoreWindow sender, CharacterReceivedEventArgs args)
         {
-            if (FocusManager.GetFocusedElement().ToString() != "Windows.UI.Xaml.Controls.TextBox")
+            if (!suggestBoxFocused)
             {
                 suggestBox.Focus(FocusState.Programmatic);
-                suggestBox.Text += (char)args.KeyCode;
+                if (args.KeyCode != 8)   //fixes backspace bug
+                    suggestBox.Text += (char)args.KeyCode;
+                else if (suggestBox.Text.Length >= 1)
+                    suggestBox.Text = suggestBox.Text.Remove(suggestBox.Text.Length -1);
+                    
             }
         }
 
@@ -66,7 +71,6 @@ namespace Tomatorater
         {
             //Start progrss ring
             progressRing.IsActive = true;
-
 
             HtmlWeb web = new HtmlWeb();
             var doc = await web.LoadFromWebAsync("https://www.rottentomatoes.com/m/" + Sanitize(movieTitle) + "/");
@@ -87,8 +91,8 @@ namespace Tomatorater
                 .Elements("div").Take(1).Single()
                 .Elements("span").Take(1).Single().InnerText;
 
-
-
+            //End progrss ring
+            progressRing.IsActive = false;
 
 
             //Display the scores :D
@@ -102,9 +106,6 @@ namespace Tomatorater
             //MovieTitle.Text = movieInfo.GetNamedString("Title") + " (" + movieInfo.GetNamedString("Year") + ")";
             this.tomatoMeter.Text = tomatoMeter;
             tomatoUserMeter.Text = audienceScore;
-
-            //End progrss ring
-            progressRing.IsActive = false;
         }
 
         //Cleans up the string - replaces spaces with underscores, converts to lowercase, removes stange characters
@@ -116,7 +117,7 @@ namespace Tomatorater
         }
 
         //get movie ratings
-        public async void CallApi(string movieTitle)
+        private async void CallApi(string movieTitle)
         {
             //Start progrss ring
             progressRing.IsActive = true;
@@ -198,7 +199,7 @@ namespace Tomatorater
             }
         }
 
-        public async void CallAutoSuggestApi(string movieTitle)
+        private async void CallAutoSuggestApi(string movieTitle)
         {
             try
             {
@@ -299,9 +300,24 @@ namespace Tomatorater
         {
             if (e.Key == VirtualKey.Enter)
             {
-                suggestBox.IsEnabled = false;
-                suggestBox.IsEnabled = true;
+                HideKeyboard();
             }
+        }
+
+        private void HideKeyboard()
+        {
+            suggestBox.IsEnabled = false;
+            suggestBox.IsEnabled = true;
+        }
+
+        private void suggestBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            suggestBoxFocused = true;
+        }
+
+        private void suggestBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            suggestBoxFocused = false;
         }
     }
 }

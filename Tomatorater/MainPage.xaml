@@ -63,7 +63,7 @@
 
         <ProgressRing x:Name="progressRing" IsActive="False" Width="100" Height="100"/>
 
-        <AutoSuggestBox Grid.Row="1" PlaceholderText="Enter a movie" x:Name="suggestBox" QueryIcon="Find" TextChanged="suggestBox_TextChanged" MaxWidth="976" Margin="10" QuerySubmitted="suggestBox_QuerySubmitted" KeyUp="suggestBox_KeyUp"/>
+        <AutoSuggestBox Grid.Row="1" PlaceholderText="Enter a movie" x:Name="suggestBox" QueryIcon="Find" TextChanged="suggestBox_TextChanged" MaxWidth="976" Margin="10" QuerySubmitted="suggestBox_QuerySubmitted" KeyUp="suggestBox_KeyUp" GotFocus="suggestBox_GotFocus" LostFocus="suggestBox_LostFocus"/>
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
