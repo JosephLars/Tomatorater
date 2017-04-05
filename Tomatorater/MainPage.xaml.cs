@@ -6,10 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Data.Json;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Foundation.Metadata;
 using Windows.System;
+using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
@@ -44,7 +47,25 @@ namespace Tomatorater
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
         }
 
-        //When a character is pressed outside of suggestBox, focus box and insert into box
+        private async void Application_Resuming(object sender, object o)
+        {
+            // Handle global application events only if this page is active
+            if (Frame.CurrentSourcePageType == typeof(MainPage))
+            {
+                await SetupUiAsync();
+            }
+        }
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            await SetupUiAsync();
+        }
+
+        /// <summary>
+        /// When a character is pressed outside of suggestBox, focus box and insert into box
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void coreWindow_CharacterReceived(CoreWindow sender, CharacterReceivedEventArgs args)
         {
             if (!suggestBoxFocused)
@@ -66,7 +87,10 @@ namespace Tomatorater
                 VisualStateManager.GoToState(this, "Portrait", true);
         }
 
-        //scrape movie ratings from HTML
+        /// <summary>
+        /// Scrape movie ratings from HTML
+        /// </summary>
+        /// <param name="movieTitle"></param>
         private async void ScrapeRatings(string movieTitle)
         {
             //Start progrss ring
@@ -108,7 +132,11 @@ namespace Tomatorater
             tomatoUserMeter.Text = audienceScore;
         }
 
-        //Cleans up the string - replaces spaces with underscores, converts to lowercase, removes stange characters
+        /// <summary>
+        /// Cleans up the string - replaces spaces with underscores, converts to lowercase, removes stange characters
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
         private string Sanitize(string str)
         {
             str = str.Replace(" ", "_").ToLower();
@@ -116,7 +144,10 @@ namespace Tomatorater
             return str;
         }
 
-        //get movie ratings
+        /// <summary>
+        /// Get movie ratings
+        /// </summary>
+        /// <param name="movieTitle"></param>
         private async void CallApi(string movieTitle)
         {
             //Start progrss ring
@@ -295,7 +326,11 @@ namespace Tomatorater
             ScrapeRatings(sender.Text);
         }
 
-        //Drops virtual keyboard when enter is pressed
+        /// <summary>
+        /// Drops virtual keyboard when enter is pressed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void suggestBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == VirtualKey.Enter)
@@ -304,6 +339,9 @@ namespace Tomatorater
             }
         }
 
+        /// <summary>
+        /// Hides the virtual keyboard if open
+        /// </summary>
         private void HideKeyboard()
         {
             suggestBox.IsEnabled = false;
@@ -318,6 +356,44 @@ namespace Tomatorater
         private void suggestBox_LostFocus(object sender, RoutedEventArgs e)
         {
             suggestBoxFocused = false;
+        }
+
+        /// <summary>
+        /// Customize StatusBar & TitleBar
+        /// Add a reference to mobile extensions = https://social.msdn.microsoft.com/Forums/sqlserver/en-US/e4ea5195-4335-47c4-ab96-55680f030f8a/where-is-windowsuiviewmanagementstatusbar-class-c-uwp?forum=wpdevelop
+        /// Sample code = https://blogs.msdn.microsoft.com/gianlucb/2015/10/08/uwp-windows-10-app-titlebar-and-status-bar-customization/
+        /// Sample implimentation = https://github.com/Microsoft/Windows-universal-samples/blob/93bdfb92b3da76f2e49c959807fc5643bf0940c9/Samples/CameraStarterKit/cs/MainPage.xaml.cs
+        /// </summary>
+        private async Task SetupUiAsync()
+        {
+            //PC customization
+            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.ApplicationView"))
+            {
+                var titleBar = ApplicationView.GetForCurrentView().TitleBar;
+                if (titleBar != null)
+                {
+                    titleBar.ButtonBackgroundColor = Colors.Red;
+                    titleBar.ButtonForegroundColor = Colors.White;
+                    titleBar.BackgroundColor = Colors.Red;
+                    titleBar.ForegroundColor = Colors.White;
+
+                    titleBar.ButtonInactiveBackgroundColor = Color.FromArgb(255, 255, 100, 100);
+                    titleBar.InactiveBackgroundColor = Color.FromArgb(255, 255, 100, 100);
+                    titleBar.InactiveForegroundColor = Colors.White;
+                }
+            }
+
+            //Mobile customization
+            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+            {
+                var statusBar = StatusBar.GetForCurrentView();
+                if (statusBar != null)
+                {
+                    statusBar.BackgroundOpacity = 1;
+                    statusBar.BackgroundColor = Colors.Red;
+                    statusBar.ForegroundColor = Colors.White;
+                }
+            }
         }
     }
 }
