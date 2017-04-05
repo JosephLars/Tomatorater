@@ -236,7 +236,8 @@ namespace Tomatorater
             {
                 //Build URI
                 //string url = "http://api.themoviedb.org/3/search/movie?api_key=4049439bdbe69a57684251f2362857d9&search_type=ngram&query=" + movieTitle;
-                string url = "http://www.omdbapi.com/?type=movie&r=json&s=" + movieTitle;
+                //string url = "http://www.omdbapi.com/?type=movie&r=json&s=" + movieTitle;
+                string url = "https://www.rottentomatoes.com/api/private/v2.0/search?t=movie&limit=5&q=" + Uri.EscapeDataString(movieTitle);
 
                 //Send GET request
                 HttpClient client = new System.Net.Http.HttpClient();
@@ -264,25 +265,21 @@ namespace Tomatorater
 
         }
 
+        /// <summary>
+        /// Creates list of movies from JSON input to send to suggestBox
+        /// </summary>
+        /// <param name="json"></param>
         private void CreateAutoComplete(string json)
         {
             JsonObject movieInfo = JsonObject.Parse(json);
 
-            //retun empty string if false response
-            if (movieInfo.ContainsKey("Response"))
-                if (movieInfo.GetNamedValue("Response").GetString() == "False")
-                {
-                    suggestBox.ItemsSource = new List<string>();
-                    return;
-                }
-
             //Get list of titles
-            var x = movieInfo.GetNamedArray("Search");
+            var x = movieInfo.GetNamedArray("movies");
             var t = x.Select(y => {
 
                 var jsonObject = y.GetObject();
 
-                return jsonObject.GetNamedValue("Title").GetString();
+                return jsonObject.GetNamedValue("name").GetString();
 
             }).ToList();
 
