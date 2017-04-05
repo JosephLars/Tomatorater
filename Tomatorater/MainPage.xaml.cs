@@ -97,7 +97,8 @@ namespace Tomatorater
             progressRing.IsActive = true;
 
             HtmlWeb web = new HtmlWeb();
-            var doc = await web.LoadFromWebAsync("https://www.rottentomatoes.com/m/" + Sanitize(movieTitle) + "/");
+            string url = "https://www.rottentomatoes.com/m/" + Sanitize(movieTitle) + "/";
+            var doc = await web.LoadFromWebAsync(url);
             string tomatoMeter = doc.DocumentNode
                 .Descendants()
                 .First(o => o.GetAttributeValue("id", "") == "tomato_meter_link")
@@ -115,6 +116,12 @@ namespace Tomatorater
                 .Elements("div").Take(1).Single()
                 .Elements("span").Take(1).Single().InnerText;
 
+            string title = doc.DocumentNode
+                .Descendants()
+                .First(o => o.GetAttributeValue("id", "") == "heroImageContainer")
+                .Elements("div").Take(1).Single()
+                .Elements("h1").Take(1).Single().InnerText.Trim();
+
             //End progrss ring
             progressRing.IsActive = false;
 
@@ -128,17 +135,19 @@ namespace Tomatorater
             MovieTitleBox.Visibility = Visibility.Visible;
 
             //MovieTitle.Text = movieInfo.GetNamedString("Title") + " (" + movieInfo.GetNamedString("Year") + ")";
+            MovieTitle.Text = title;
             this.tomatoMeter.Text = tomatoMeter;
             tomatoUserMeter.Text = audienceScore;
         }
 
         /// <summary>
-        /// Cleans up the string - replaces spaces with underscores, converts to lowercase, removes stange characters
+        /// Cleans up the string - replaces spaces with underscores, converts to lowercase, removes stange characters, trims ends
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
         private string Sanitize(string str)
         {
+            str = str.Trim();
             str = str.Replace(" ", "_").ToLower();
             str = System.Text.RegularExpressions.Regex.Replace(str, @"[^\w\.@-]", "");
             return str;
