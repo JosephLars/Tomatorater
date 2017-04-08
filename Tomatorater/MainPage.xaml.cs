@@ -70,6 +70,8 @@ namespace Tomatorater
         {
             if (!suggestBoxFocused)
             {
+                if (args.KeyCode == 27)  //ignores esc key
+                    return;
                 suggestBox.Focus(FocusState.Programmatic);
                 if (args.KeyCode != 8)   //fixes backspace bug
                     suggestBox.Text += (char)args.KeyCode;
@@ -88,78 +90,62 @@ namespace Tomatorater
         }
 
         /// <summary>
-        /// Scrape movie ratings from HTML
+        /// Displays a Movie on the screen
         /// </summary>
-        /// <param name="movieTitle"></param>
-        private async void ScrapeRatings(string movieTitle)
+        /// <param name="movie"></param>
+        private void DisplayMovie(Movie movie)
         {
-            //Start progrss ring
-            progressRing.IsActive = true;
-
-            HtmlWeb web = new HtmlWeb();
-            string url = "https://www.rottentomatoes.com/m/" + Sanitize(movieTitle) + "/";
-            var doc = await web.LoadFromWebAsync(url);
-            string tomatoMeter = doc.DocumentNode
-                .Descendants()
-                .First(o => o.GetAttributeValue("id", "") == "tomato_meter_link")
-                .Descendants()
-                .Where(e => e.Name == "span").Skip(1).Take(1).Single().InnerText;
-
-            string audienceScore = doc.DocumentNode
-                .Descendants()
-                .First(o => o.GetAttributeValue("id", "") == "scorePanel")
-                .Elements("div").Skip(1).Take(1).Single()
-                .Elements("div").Take(1).Single()
-                .Elements("a").Take(1).Single()
-                .Elements("div").Take(1).Single()
-                .Elements("div").Skip(1).Take(1).Single()
-                .Elements("div").Take(1).Single()
-                .Elements("span").Take(1).Single().InnerText;
-
-            string title = doc.DocumentNode
-                .Descendants()
-                .First(o => o.GetAttributeValue("id", "") == "heroImageContainer")
-                .Elements("div").Take(1).Single()
-                .Elements("h1").Take(1).Single().InnerText.Trim();
-
-            string tomatoMeterIcon = doc.DocumentNode
-                .Descendants()
-                .First(o => o.GetAttributeValue("id", "") == "tomato_meter_link")
-                .Elements("span").Take(1).Single().OuterHtml.ToString();
-            if (tomatoMeterIcon.Contains("certified_fresh"))
-                tomatoMeterIcon = "certified_fresh";
-            else if (tomatoMeterIcon.Contains("fresh"))
-                tomatoMeterIcon = "fresh";
-            else
-                tomatoMeterIcon = "rotten";
-
-            //End progrss ring
-            progressRing.IsActive = false;
-
-
-            //Display the scores :D
+            //Set up views
             RatingDisplay.Visibility = Visibility.Visible;
             TomatoImage.Visibility = Visibility.Visible;
             PopcornImage.Visibility = Visibility.Visible;
-
             MirrorBox.Visibility = Visibility.Collapsed;
             MovieTitleBox.Visibility = Visibility.Visible;
 
-            //MovieTitle.Text = movieInfo.GetNamedString("Title") + " (" + movieInfo.GetNamedString("Year") + ")";
-            MovieTitle.Text = title;
-            this.tomatoMeter.Text = tomatoMeter;
-            tomatoUserMeter.Text = audienceScore;
-
+            //Print attributes
+            MovieTitle.Text = movie.Title + " ("+ movie.Year + ")";
+            tomatoMeter.Text = movie.MeterScore.ToString() + "%";
+            tomatoUserMeter.Text = movie.AudienceScore.ToString() + "%";
             
-            if (tomatoMeterIcon == "certified_fresh")
+            //Display Tomatometer
+            if (movie.MeterClass == "certified_fresh")
                 TomatoImage.Source = new BitmapImage(new Uri("ms-appx:///Images/CF_120x120.png"));
-            else if (tomatoMeterIcon == "fresh")
+            else if (movie.MeterClass == "fresh")
                 TomatoImage.Source = new BitmapImage(new Uri("ms-appx:///Images/fresh.png"));
-            else if (tomatoMeterIcon == "rotten")
+            else if (movie.MeterClass == "rotten")
                 TomatoImage.Source = new BitmapImage(new Uri("ms-appx:///Images/rotten.png"));
-            else
+            else if (movie.MeterClass == "N/A") //probably upcoming movie
+            {
                 TomatoImage.Visibility = Visibility.Collapsed;
-            
+                tomatoMeter.Text = "n/a";
+            }
+            else //tomatometer not avialiable (probably upcoming movie)
+                TomatoImage.Visibility = Visibility.Collapsed;
+
+            //Display Audience Score
+            if (movie.AudienceClass == "want")
+            {
+                audienceTitle.Text = "WANT TO SEE";
+                PopcornImage.Source = new BitmapImage(new Uri("ms-appx:///Images/want.png"));
+            }
+            else if (movie.AudienceClass == "upright")
+            {
+                audienceTitle.Text = "AUDIENCE SCORE";
+                PopcornImage.Source = new BitmapImage(new Uri("ms-appx:///Images/popcorn.png"));
+            }
+            else if (movie.AudienceClass == "spilled")
+            {
+                audienceTitle.Text = "AUDIENCE SCORE";
+                PopcornImage.Source = new BitmapImage(new Uri("ms-appx:///Images/spilt.png"));
+            }
+            else if (movie.AudienceClass == "N/A")
+            {
+                audienceTitle.Text = "AUDIENCE SCORE";
+                PopcornImage.Visibility = Visibility.Collapsed;
+                tomatoUserMeter.Text = "not yet";
+            }
+            else
+                PopcornImage.Visibility = Visibility.Collapsed;
         }
 
         /// <summary>
@@ -173,6 +159,56 @@ namespace Tomatorater
             str = str.Replace(" ", "_").ToLower();
             str = System.Text.RegularExpressions.Regex.Replace(str, @"[^\w\.@-]", "");
             return str;
+        }
+
+        /// <summary>
+        /// Scrape movie ratings from HTML
+        /// </summary>
+        /// <param name="movieTitle"></param>
+        private async void ScrapeRatings(Movie movie)
+        {
+            //Start progrss ring
+            progressRing.IsActive = true;
+
+            //Retrieve HTML for scraping
+            HtmlWeb web = new HtmlWeb();
+            string url = "https://www.rottentomatoes.com" + movie.Url;
+            var doc = await web.LoadFromWebAsync(url);
+
+            //Scrape audience class - *[@id="scorePanel"]/div[2]/h3/text()
+            string audienceClass = doc.DocumentNode
+                .Descendants()
+                .First(o => o.GetAttributeValue("id", "") == "scorePanel")
+                .Elements("div").Skip(1).Take(1).Single()
+                .Elements("h3").Take(1).Single().InnerText.Trim();
+            if (audienceClass == "Want to See")
+                movie.AudienceClass = "want";
+
+            //Scrape audience score
+            try
+            {
+                string audienceScoreString = doc.DocumentNode
+                .Descendants()
+                .First(o => o.GetAttributeValue("id", "") == "scorePanel")
+                .Elements("div").Skip(1).Take(1).Single()
+                .Elements("div").Take(1).Single()
+                .Elements("a").Take(1).Single()
+                .Elements("div").Take(1).Single()
+                .Elements("div").Skip(1).Take(1).Single()
+                .Elements("div").Take(1).Single()
+                .Elements("span").Take(1).Single().InnerText;
+                movie.AudienceScore = Convert.ToInt32(audienceScoreString.Replace("%", ""));
+            }
+            catch (InvalidOperationException e)
+            {
+                movie.AudienceClass = "N/A";
+            }
+
+            //End progrss ring
+            progressRing.IsActive = false;
+
+            //Display the scores :D
+            DisplayMovie(movie);
         }
 
         /// <summary>
@@ -266,8 +302,6 @@ namespace Tomatorater
             try
             {
                 //Build URI
-                //string url = "http://api.themoviedb.org/3/search/movie?api_key=4049439bdbe69a57684251f2362857d9&search_type=ngram&query=" + movieTitle;
-                //string url = "http://www.omdbapi.com/?type=movie&r=json&s=" + movieTitle;
                 string url = "https://www.rottentomatoes.com/api/private/v2.0/search?t=movie&limit=5&q=" + Uri.EscapeDataString(movieTitle);
 
                 //Send GET request
@@ -296,6 +330,39 @@ namespace Tomatorater
 
         }
 
+        private async void CallSearchApi(string movieTitle)
+        {
+            try
+            {
+                //Build URI
+                string url = "https://www.rottentomatoes.com/api/private/v2.0/search?t=movie&limit=1&q=" + Uri.EscapeDataString(movieTitle);
+
+                //Send GET request
+                HttpClient client = new System.Net.Http.HttpClient();
+                HttpResponseMessage response = await client.GetAsync(url);
+
+                //Respond to GET request
+                if (response.IsSuccessStatusCode)
+                {
+                    //Parse to JSON string
+                    string json = await response.Content.ReadAsStringAsync();
+
+                    ScrapeRatings(ExtractMovie(json));
+                }
+                else
+                {
+                    //Connection Error
+                    Debug.WriteLine("Error occured, the status code is: {0}", response.StatusCode);
+                }
+            }
+            catch (HttpRequestException e)
+            {
+                //Connection Error
+                Debug.WriteLine("No response");
+            }
+
+        }
+
         /// <summary>
         /// Creates list of movies from JSON input to send to suggestBox
         /// </summary>
@@ -303,19 +370,45 @@ namespace Tomatorater
         private void CreateAutoComplete(string json)
         {
             JsonObject movieInfo = JsonObject.Parse(json);
+            
 
             //Get list of titles
             var x = movieInfo.GetNamedArray("movies");
             var t = x.Select(y => {
-
                 var jsonObject = y.GetObject();
 
-                return jsonObject.GetNamedValue("name").GetString();
+                Movie movie = new Movie();
+                movie.Title = jsonObject.GetNamedValue("name").GetString();
+                if (jsonObject.GetNamedValue("year").ValueType == JsonValueType.Number)
+                    movie.Year = (int)jsonObject.GetNamedValue("year", JsonValue.CreateNumberValue(0)).GetNumber();
+                else
+                    movie.Year = 0;
+                movie.Url = jsonObject.GetNamedValue("url").GetString();
+                movie.MeterClass = jsonObject.GetNamedValue("meterClass").GetString();
+                movie.MeterScore = (int)jsonObject.GetNamedValue("meterScore", JsonValue.CreateNumberValue(0)).GetNumber();
+                return movie;
 
             }).ToList();
 
             //Assign list to autocomplete box
             suggestBox.ItemsSource = t.Take(5);
+        }
+
+        private Movie ExtractMovie(string json)
+        {
+            JsonObject movieInfo = JsonObject.Parse(json);
+            JsonArray movies = movieInfo.GetNamedArray("movies");
+
+            Movie movie = new Movie();
+            movie.Title = movies.GetObjectAt(0).GetNamedValue("name").GetString();
+            if (movies.GetObjectAt(0).GetNamedValue("year").ValueType == JsonValueType.Number)
+                movie.Year = (int)movies.GetObjectAt(0).GetNamedValue("year", JsonValue.CreateNumberValue(0)).GetNumber();
+            else
+                movie.Year = 0;
+            movie.Url = movies.GetObjectAt(0).GetNamedValue("url").GetString();
+            movie.MeterClass = movieInfo.GetNamedArray("movies").GetObjectAt(0).GetNamedValue("meterClass").GetString();
+            movie.MeterScore = (int)movieInfo.GetNamedArray("movies").GetObjectAt(0).GetNamedValue("meterScore", JsonValue.CreateNumberValue(0)).GetNumber();
+            return movie;
         }
 
         private void suggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -349,9 +442,18 @@ namespace Tomatorater
 
         private void suggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
+            if (args.ChosenSuggestion != null)
+            {
+                // User selected an item from the suggestion list, take an action on it here.
+                ScrapeRatings((Movie)args.ChosenSuggestion);
+            }
+            else
+            {
+                // Use args.QueryText to determine what to do.
+                // Construct Movie
+                CallSearchApi(args.QueryText);
+            }
             Debug.WriteLine("QuerySubmitted");
-            //CallApi(sender.Text);
-            ScrapeRatings(sender.Text);
         }
 
         /// <summary>

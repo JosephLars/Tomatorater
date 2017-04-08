@@ -45,7 +45,7 @@
                     </StackPanel>
                 </StackPanel>
                 <StackPanel x:Name="SecondBox" Margin="25" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="AUDIENCE SCORE" Style="{ThemeResource SubtitleTextBlockStyle}"/>
+                    <TextBlock x:Name="audienceTitle" Text="AUDIENCE SCORE" Style="{ThemeResource SubtitleTextBlockStyle}"/>
                     <StackPanel Orientation="Horizontal">
                         <Image x:Name="PopcornImage" Source="Images\popcorn.png" Width="60" Height="60" Margin="0,0,5,0"/>
                         <TextBlock x:Name="tomatoUserMeter" Style="{ThemeResource HeaderTextBlockStyle}" HorizontalAlignment="Center"/>
@@ -69,7 +69,7 @@
 
         <ProgressRing x:Name="progressRing" IsActive="False" Width="100" Height="100"/>
 
-        <AutoSuggestBox Grid.Row="1" PlaceholderText="Enter a movie" x:Name="suggestBox" QueryIcon="Find" TextChanged="suggestBox_TextChanged" MaxWidth="976" Margin="10" QuerySubmitted="suggestBox_QuerySubmitted" KeyUp="suggestBox_KeyUp" GotFocus="suggestBox_GotFocus" LostFocus="suggestBox_LostFocus"/>
+        <AutoSuggestBox Grid.Row="1" PlaceholderText="Enter a movie" x:Name="suggestBox" DisplayMemberPath="Listing" TextMemberPath="Listing" QueryIcon="Find" TextChanged="suggestBox_TextChanged" MaxWidth="976" Margin="10" QuerySubmitted="suggestBox_QuerySubmitted" KeyUp="suggestBox_KeyUp" GotFocus="suggestBox_GotFocus" LostFocus="suggestBox_LostFocus"/>
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
