@@ -19,10 +19,7 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
-
-
-
-
+        
         <Viewbox x:Name="MirrorBox" StretchDirection="DownOnly" Visibility="Collapsed" Margin="12,0,12,0">
             <TextBlock x:Name="Mirror" Text="{Binding Text, ElementName=suggestBox}" Style="{ThemeResource HeaderTextBlockStyle}" HorizontalAlignment="Center"/>
         </Viewbox>
@@ -67,7 +64,7 @@
         </StackPanel>
 
 
-        <ProgressRing x:Name="progressRing" IsActive="False" Width="100" Height="100"/>
+        <ProgressRing x:Name="progressRing" IsActive="False" Width="100" Height="100" Margin="0,0,0,200"/>
 
         <AutoSuggestBox Grid.Row="1" PlaceholderText="Enter a movie" x:Name="suggestBox" DisplayMemberPath="Listing" TextMemberPath="Listing" QueryIcon="Find" TextChanged="suggestBox_TextChanged" MaxWidth="976" Margin="10" QuerySubmitted="suggestBox_QuerySubmitted" KeyUp="suggestBox_KeyUp" GotFocus="suggestBox_GotFocus" LostFocus="suggestBox_LostFocus"/>
 
