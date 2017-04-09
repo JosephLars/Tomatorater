@@ -47,18 +47,18 @@ namespace Tomatorater
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
         }
 
-        private async void Application_Resuming(object sender, object o)
+        private void Application_Resuming(object sender, object o)
         {
             // Handle global application events only if this page is active
             if (Frame.CurrentSourcePageType == typeof(MainPage))
             {
-                await SetupUiAsync();
+                SetupUi();
             }
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            await SetupUiAsync();
+            SetupUi();
         }
 
         /// <summary>
@@ -189,6 +189,7 @@ namespace Tomatorater
             catch (InvalidOperationException e)
             {
                 movie.AudienceClass = "N/A";
+                Debug.WriteLine(e);
             }
 
             //End progrss ring
@@ -226,7 +227,7 @@ namespace Tomatorater
             catch (HttpRequestException e)
             {
                 //Connection Error
-                Debug.WriteLine("No response");
+                Debug.WriteLine("No response: " + e);
             }
 
         }
@@ -259,7 +260,7 @@ namespace Tomatorater
             catch (HttpRequestException e)
             {
                 //Connection Error
-                Debug.WriteLine("No response");
+                Debug.WriteLine("No response: " + e);
             }
 
         }
@@ -395,7 +396,7 @@ namespace Tomatorater
         /// Sample code = https://blogs.msdn.microsoft.com/gianlucb/2015/10/08/uwp-windows-10-app-titlebar-and-status-bar-customization/
         /// Sample implimentation = https://github.com/Microsoft/Windows-universal-samples/blob/93bdfb92b3da76f2e49c959807fc5643bf0940c9/Samples/CameraStarterKit/cs/MainPage.xaml.cs
         /// </summary>
-        private async Task SetupUiAsync()
+        private void SetupUi()
         {
             //PC customization
             if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.ApplicationView"))

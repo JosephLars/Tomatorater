@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="2c6b4f80-efce-43fe-a635-3cdee19f0bf5" Publisher="CN=JELP" Version="1.3.1.0" />
-  <mp:PhoneIdentity PhoneProductId="2c6b4f80-efce-43fe-a635-3cdee19f0bf5" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+  <Identity Name="37776JELP.Tomatorater" Publisher="CN=D5293C74-4231-47CA-A8BC-941F0C246058" Version="1.3.1.0" />
+  <mp:PhoneIdentity PhoneProductId="ae3ad51a-e29e-4dc6-9a6d-18ec9b9d59f5" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>Tomatorater</DisplayName>
     <PublisherDisplayName>JELP</PublisherDisplayName>
@@ -16,7 +16,7 @@
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="Tomatorater.App">
       <uap:VisualElements DisplayName="Tomatorater" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="Rotten Tomatoes ratings, instantly! Just start typing." BackgroundColor="transparent">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square71x71Logo="Assets\Square71x71Logo.png">
+        <uap:DefaultTile Square71x71Logo="Assets\Square71x71Logo.png">
           <uap:ShowNameOnTiles>
             <uap:ShowOn Tile="square150x150Logo" />
           </uap:ShowNameOnTiles>
