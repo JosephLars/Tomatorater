@@ -149,19 +149,6 @@ namespace Tomatorater
         }
 
         /// <summary>
-        /// Cleans up the string - replaces spaces with underscores, converts to lowercase, removes stange characters, trims ends
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        private string Sanitize(string str)
-        {
-            str = str.Trim();
-            str = str.Replace(" ", "_").ToLower();
-            str = System.Text.RegularExpressions.Regex.Replace(str, @"[^\w\.@-]", "");
-            return str;
-        }
-
-        /// <summary>
         /// Scrape movie ratings from HTML
         /// </summary>
         /// <param name="movieTitle"></param>
@@ -209,92 +196,6 @@ namespace Tomatorater
 
             //Display the scores :D
             DisplayMovie(movie);
-        }
-
-        /// <summary>
-        /// Get movie ratings
-        /// </summary>
-        /// <param name="movieTitle"></param>
-        private async void CallApi(string movieTitle)
-        {
-            //Start progrss ring
-            progressRing.IsActive = true;
-
-            //Build URI
-            string url = "http://www.omdbapi.com/?y=&plot=short&type=movie&tomatoes=true&r=json&t=" + movieTitle;
-
-            try
-            {
-                //Send GET request
-                var client = new System.Net.Http.HttpClient();
-                var response = await client.GetAsync(url);
-
-                //Respond to GET request
-                if (response.IsSuccessStatusCode)
-                {
-                    //Parse to JSON string
-                    string json = await response.Content.ReadAsStringAsync();
-                    JsonObject movieInfo = JsonObject.Parse(json);
-
-                    if (movieInfo.GetNamedString("Response") == "False")
-                    {
-                        Debug.WriteLine("No result");
-                        return;
-                    }
-                    else if (movieInfo.GetNamedString("Title").ToLower().Replace("  ", "") != suggestBox.Text.ToLower().Replace("  ", ""))
-                    {
-                        Debug.WriteLine("Out of scope");
-                        return;
-                    }
-                    else if (!string.IsNullOrWhiteSpace(suggestBox.Text) && movieInfo.GetNamedString("Response") == "True")
-                    {
-                        //Success :D
-                        RatingDisplay.Visibility = Visibility.Visible;
-                        TomatoImage.Visibility = Visibility.Visible;
-                        PopcornImage.Visibility = Visibility.Visible;
-
-                        MirrorBox.Visibility = Visibility.Collapsed;
-                        MovieTitleBox.Visibility = Visibility.Visible;
-
-                        MovieTitle.Text = movieInfo.GetNamedString("Title") + " (" + movieInfo.GetNamedString("Year") + ")";
-                        tomatoMeter.Text = movieInfo.GetNamedArray("Ratings").GetObjectAt(1).GetNamedString("Value");
-                        tomatoUserMeter.Text = movieInfo.GetNamedArray("Ratings").GetObjectAt(0).GetNamedString("Value");
-                        if (movieInfo.GetNamedString("tomatoImage") == "certified")
-                            CertIm.Visibility = Visibility.Visible;
-                        else
-                            CertIm.Visibility = Visibility.Collapsed;
-
-                        if (movieInfo.GetNamedString("tomatoMeter") == "N/A")
-                            TomatoImage.Visibility = Visibility.Collapsed;
-                        else if (Int32.Parse(movieInfo.GetNamedString("tomatoMeter")) >= 60)
-                            TomatoImage.Source = new BitmapImage(new Uri("ms-appx:///Images/fresh.png"));
-                        else
-                            TomatoImage.Source = new BitmapImage(new Uri("ms-appx:///Images/rotten.png"));
-
-                        if (movieInfo.GetNamedString("tomatoUserMeter") == "N/A")
-                            PopcornImage.Visibility = Visibility.Collapsed;
-                        else if (Int32.Parse(movieInfo.GetNamedString("tomatoUserMeter")) >= 60)
-                            PopcornImage.Source = new BitmapImage(new Uri("ms-appx:///Images/popcorn.png"));
-                        else
-                            PopcornImage.Source = new BitmapImage(new Uri("ms-appx:///Images/spilt.png"));
-                    }
-                }
-                else
-                {
-                    //Connection Error
-                    Debug.WriteLine("No response");
-                }
-            }
-            catch (HttpRequestException e)
-            {
-                //No Internet
-                //display.Text = "Check your connection";
-            }
-            finally
-            {
-                //End progrss ring
-                progressRing.IsActive = false;
-            }
         }
 
         private async void CallAutoSuggestApi(string movieTitle)
